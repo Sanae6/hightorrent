@@ -25,6 +25,8 @@ sha256 = "1.5"
 rustc-hex = "2.1"
 serde = { version = "1", features = [ "derive" ] }
 url = "2.5"
+bytemuck = "1.19.0"
+base32 = "0.5.1"
 
 [features]
 magnet_force_name = []

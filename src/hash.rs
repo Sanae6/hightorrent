@@ -1,3 +1,5 @@
+use base32::Alphabet;
+use rustc_hex::ToHex;
 use serde::{Deserialize, Serialize};
 
 use std::str::FromStr;
@@ -64,6 +66,19 @@ impl InfoHash {
     /// instead. If you want to unambiguously designate a Torrent by a 40 characters identifier,
     /// you should use [`TorrentID`](crate::id::TorrentID) instead.
     pub fn new(hash: &str) -> Result<InfoHash, InfoHashError> {
+        let len = hash.len();
+
+        println!("checking hash {} {}", hash.len(), hash);
+
+        if len == 32 {
+            return match base32::decode(Alphabet::Rfc4648 { padding: true }, hash) {
+                Some(vec) => Ok(InfoHash::V2(vec.to_hex::<String>().to_uppercase())),
+                None => Err(InfoHashError::InvalidChars {
+                    hash: hash.to_owned(),
+                }),
+            };
+        }
+
         if !hash.as_bytes().iter().all(|b| b.is_ascii_hexdigit()) {
             return Err(InfoHashError::InvalidChars {
                 hash: hash.to_string(),
@@ -71,7 +86,6 @@ impl InfoHash {
         }
 
         let hash = hash.to_lowercase();
-        let len = hash.len();
 
         if len == 40 {
             Ok(InfoHash::V1(hash))
